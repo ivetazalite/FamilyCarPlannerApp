@@ -5,11 +5,10 @@ import {
   TextInput,
   ScrollView,
   Platform,
-  TouchableOpacity,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { X, AlertCircle } from 'lucide-react-native';
+import { X, AlertCircle, Pencil } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
@@ -49,9 +48,13 @@ export default function NewReservationScreen() {
   // Date/time picker state
   const [showStartDate, setShowStartDate] = useState(false);
   const [showEndDate, setShowEndDate] = useState(false);
+  const [showStartTime, setShowStartTime] = useState(false);
+  const [showEndTime, setShowEndTime] = useState(false);
 
   const startDateDisplay = format(startDate, 'EEE, d MMM yyyy');
   const endDateDisplay = format(endDate, 'EEE, d MMM yyyy');
+  const startTimeDisplay = format(startDate, 'HH:mm');
+  const endTimeDisplay = format(endDate, 'HH:mm');
 
   const handleSave = useCallback(async () => {
     console.log('[NewReservation] Save reservation pressed:', title);
@@ -259,24 +262,57 @@ export default function NewReservationScreen() {
           )}
         </View>
 
-        {/* Start time — always-visible inline spinner */}
+        {/* Start time */}
         <View style={{ gap: 6 }}>
           <Text style={labelStyle}>Start time</Text>
-          <DateTimePicker
-            value={startDate}
-            mode="time"
-            is24Hour
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={(_, date) => {
-              if (date) {
-                setStartDate(date);
-                if (date >= endDate) {
-                  setEndDate(addHours(date, 1));
-                }
-                console.log('[NewReservation] Start time changed:', date.toISOString());
-              }
+          <AnimatedPressable
+            onPress={() => {
+              console.log('[NewReservation] Start time picker opened');
+              setShowStartTime(true);
             }}
-          />
+            style={{
+              backgroundColor: COLORS.surfaceSecondary,
+              borderRadius: 10,
+              paddingHorizontal: 14,
+              paddingVertical: 14,
+              borderWidth: 1,
+              borderColor: COLORS.border,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+            accessibilityLabel="Select start time"
+            accessibilityRole="button"
+          >
+            <Text
+              style={{
+                fontSize: 15,
+                color: COLORS.text,
+                fontFamily: 'SpaceGrotesk-Regular',
+              }}
+            >
+              {startTimeDisplay}
+            </Text>
+            <Pencil size={14} color={COLORS.textSecondary} />
+          </AnimatedPressable>
+          {showStartTime && (
+            <DateTimePicker
+              value={startDate}
+              mode="time"
+              is24Hour
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={(_, date) => {
+                if (Platform.OS !== 'ios') setShowStartTime(false);
+                if (date) {
+                  setStartDate(date);
+                  if (date >= endDate) {
+                    setEndDate(addHours(date, 1));
+                  }
+                  console.log('[NewReservation] Start time changed:', date.toISOString());
+                }
+              }}
+            />
+          )}
         </View>
 
         {/* End date */}
@@ -326,21 +362,54 @@ export default function NewReservationScreen() {
           )}
         </View>
 
-        {/* End time — always-visible inline spinner */}
+        {/* End time */}
         <View style={{ gap: 6 }}>
           <Text style={labelStyle}>End time</Text>
-          <DateTimePicker
-            value={endDate}
-            mode="time"
-            is24Hour
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={(_, date) => {
-              if (date) {
-                setEndDate(date);
-                console.log('[NewReservation] End time changed:', date.toISOString());
-              }
+          <AnimatedPressable
+            onPress={() => {
+              console.log('[NewReservation] End time picker opened');
+              setShowEndTime(true);
             }}
-          />
+            style={{
+              backgroundColor: COLORS.surfaceSecondary,
+              borderRadius: 10,
+              paddingHorizontal: 14,
+              paddingVertical: 14,
+              borderWidth: 1,
+              borderColor: COLORS.border,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+            accessibilityLabel="Select end time"
+            accessibilityRole="button"
+          >
+            <Text
+              style={{
+                fontSize: 15,
+                color: COLORS.text,
+                fontFamily: 'SpaceGrotesk-Regular',
+              }}
+            >
+              {endTimeDisplay}
+            </Text>
+            <Pencil size={14} color={COLORS.textSecondary} />
+          </AnimatedPressable>
+          {showEndTime && (
+            <DateTimePicker
+              value={endDate}
+              mode="time"
+              is24Hour
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={(_, date) => {
+                if (Platform.OS !== 'ios') setShowEndTime(false);
+                if (date) {
+                  setEndDate(date);
+                  console.log('[NewReservation] End time changed:', date.toISOString());
+                }
+              }}
+            />
+          )}
         </View>
 
         {/* Notes */}
