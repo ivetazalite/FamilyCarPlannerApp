@@ -12,8 +12,8 @@ interface AuthContextValue {
 
 const MOCK_USER: User = {
   id: 'mock-1',
-  name: 'Alice Smith',
-  email: 'alice@family.com',
+  name: 'Kārlis',
+  email: 'karlis@family.com',
   color: '#3B82F6',
   role: 'admin',
   createdAt: new Date().toISOString(),

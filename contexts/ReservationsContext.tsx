@@ -17,36 +17,44 @@ interface ReservationsContextValue {
   getReservation: (id: string) => Reservation | undefined;
 }
 
-const MOCK_ALICE: User = {
+const MOCK_KARLIS: User = {
   id: 'mock-1',
-  name: 'Alice Smith',
-  email: 'alice@family.com',
+  name: 'Kārlis',
+  email: 'karlis@family.com',
   color: '#3B82F6',
   role: 'admin',
   createdAt: new Date().toISOString(),
 };
 
-const MOCK_BOB: User = {
+const MOCK_GIRTS: User = {
   id: 'mock-2',
-  name: 'Bob Smith',
-  email: 'bob@family.com',
+  name: 'Ģirts',
+  email: 'girts@family.com',
   color: '#10B981',
   role: 'member',
   createdAt: new Date().toISOString(),
 };
 
-const MOCK_CAROL: User = {
+const MOCK_GUSTAVS: User = {
   id: 'mock-3',
-  name: 'Carol Smith',
-  email: 'carol@family.com',
+  name: 'Gustavs',
+  email: 'gustavs@family.com',
   color: '#F59E0B',
+  role: 'member',
+  createdAt: new Date().toISOString(),
+};
+
+const MOCK_IVETA: User = {
+  id: 'mock-4',
+  name: 'Iveta',
+  email: 'iveta@family.com',
+  color: '#EF4444',
   role: 'member',
   createdAt: new Date().toISOString(),
 };
 
 function makeSeedReservations(): Reservation[] {
   const now = new Date();
-  // Anchor to start of today
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   function dayOffset(days: number, hour: number, minute = 0): string {
@@ -60,30 +68,30 @@ function makeSeedReservations(): Reservation[] {
     {
       id: 'seed-1',
       userId: 'mock-1',
-      user: MOCK_ALICE,
-      title: 'School run',
+      user: MOCK_KARLIS,
+      title: 'Bērnu skola',
       startTime: dayOffset(0, 8, 0),
       endTime: dayOffset(0, 9, 0),
-      notes: 'Drop off kids at Riverside Primary',
+      notes: 'Atvest bērnus uz skolu',
       status: 'ACTIVE',
       createdAt: dayOffset(-1, 10),
     },
     {
       id: 'seed-2',
       userId: 'mock-2',
-      user: MOCK_BOB,
-      title: 'Grocery shopping',
+      user: MOCK_GIRTS,
+      title: 'Lielveikals',
       startTime: dayOffset(1, 10, 30),
       endTime: dayOffset(1, 12, 0),
-      notes: 'Costco + Trader Joe\'s',
+      notes: 'Rimi un Maxima',
       status: 'ACTIVE',
       createdAt: dayOffset(-1, 11),
     },
     {
       id: 'seed-3',
       userId: 'mock-3',
-      user: MOCK_CAROL,
-      title: 'Gym session',
+      user: MOCK_GUSTAVS,
+      title: 'Sporta zāle',
       startTime: dayOffset(2, 7, 0),
       endTime: dayOffset(2, 8, 30),
       status: 'ACTIVE',
@@ -91,14 +99,25 @@ function makeSeedReservations(): Reservation[] {
     },
     {
       id: 'seed-4',
-      userId: 'mock-1',
-      user: MOCK_ALICE,
-      title: 'Airport pickup',
-      startTime: dayOffset(4, 15, 0),
-      endTime: dayOffset(4, 17, 0),
-      notes: 'Terminal 2, flight AA1234',
+      userId: 'mock-4',
+      user: MOCK_IVETA,
+      title: 'Lidostas brauciens',
+      startTime: dayOffset(3, 15, 0),
+      endTime: dayOffset(3, 17, 0),
+      notes: 'Rīgas lidosta, reiss RIX1234',
       status: 'ACTIVE',
       createdAt: dayOffset(-1, 13),
+    },
+    {
+      id: 'seed-5',
+      userId: 'mock-1',
+      user: MOCK_KARLIS,
+      title: 'Ārsta apmeklējums',
+      startTime: dayOffset(4, 11, 0),
+      endTime: dayOffset(4, 12, 0),
+      notes: 'Poliklīnika',
+      status: 'ACTIVE',
+      createdAt: dayOffset(-1, 14),
     },
   ];
 }
@@ -111,8 +130,8 @@ export function ReservationsProvider({ children }: { children: React.ReactNode }
   const createReservation = useCallback((data: CreateReservationData): Reservation => {
     const newReservation: Reservation = {
       id: Math.random().toString(36).slice(2),
-      userId: MOCK_ALICE.id,
-      user: MOCK_ALICE,
+      userId: MOCK_KARLIS.id,
+      user: MOCK_KARLIS,
       title: data.title,
       startTime: data.startTime,
       endTime: data.endTime,
