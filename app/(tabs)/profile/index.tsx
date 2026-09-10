@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Settings, LogOut, ChevronRight, Edit2, Check, X } from 'lucide-react-native';
+import type { User } from '@/types';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
@@ -52,6 +53,18 @@ export default function ProfileScreen() {
       setIsSaving(false);
     }
   }, [editName, editColor, updateProfile]);
+
+  const handleSwitchMember = useCallback((member: User) => {
+    if (member.id === user?.id) return;
+    console.log('[ProfileScreen] Switch member pressed:', member.name, member.id);
+    updateProfile({
+      id: member.id,
+      name: member.name,
+      email: member.email,
+      color: member.color,
+      role: member.role,
+    });
+  }, [user, updateProfile]);
 
   const handleLogout = useCallback(() => {
     console.log('[ProfileScreen] Sign out pressed');
@@ -282,51 +295,63 @@ export default function ProfileScreen() {
                 Family Members
               </Text>
             </View>
-            {members.map((member, index) => (
-              <View
-                key={member.id}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  padding: 14,
-                  gap: 12,
-                  borderBottomWidth: index < members.length - 1 ? 1 : 0,
-                  borderBottomColor: COLORS.divider,
-                }}
-              >
-                <MemberAvatar name={member.name} color={member.color} size={36} />
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: '600',
-                      color: COLORS.text,
-                      fontFamily: 'SpaceGrotesk-SemiBold',
-                    }}
-                  >
-                    {member.name}
-                    {member.id === user.id ? ' (you)' : ''}
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      color: COLORS.textSecondary,
-                      fontFamily: 'SpaceGrotesk-Regular',
-                    }}
-                  >
-                    {member.role}
-                  </Text>
-                </View>
-                <View
+            {members.map((member, index) => {
+              const isActive = member.id === user.id;
+              const memberNameSuffix = isActive ? ' (you)' : '';
+              return (
+                <AnimatedPressable
+                  key={member.id}
+                  onPress={() => handleSwitchMember(member)}
                   style={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: 6,
-                    backgroundColor: member.color,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    padding: 14,
+                    gap: 12,
+                    borderBottomWidth: index < members.length - 1 ? 1 : 0,
+                    borderBottomColor: COLORS.divider,
+                    backgroundColor: isActive ? COLORS.primaryMuted : 'transparent',
                   }}
-                />
-              </View>
-            ))}
+                  accessibilityLabel={isActive ? member.name + ' (active)' : 'Switch to ' + member.name}
+                  accessibilityRole="button"
+                >
+                  <MemberAvatar name={member.name} color={member.color} size={36} />
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontWeight: '600',
+                        color: COLORS.text,
+                        fontFamily: 'SpaceGrotesk-SemiBold',
+                      }}
+                    >
+                      {member.name}
+                      {memberNameSuffix}
+                    </Text>
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: COLORS.textSecondary,
+                        fontFamily: 'SpaceGrotesk-Regular',
+                      }}
+                    >
+                      {member.role}
+                    </Text>
+                  </View>
+                  {isActive ? (
+                    <Check size={16} color={COLORS.primary} />
+                  ) : (
+                    <View
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 6,
+                        backgroundColor: member.color,
+                      }}
+                    />
+                  )}
+                </AnimatedPressable>
+              );
+            })}
           </View>
         )}
 

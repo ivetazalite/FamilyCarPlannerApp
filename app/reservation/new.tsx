@@ -16,6 +16,7 @@ import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { ReminderPicker } from '@/components/ReminderPicker';
 import { useCreateReservation } from '@/hooks/useReservations';
 import { useFamily } from '@/contexts/FamilyContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 import { addHours } from 'date-fns/addHours';
 import { addMinutes } from 'date-fns/addMinutes';
@@ -27,6 +28,7 @@ export default function NewReservationScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ startTime?: string }>();
   const { settings } = useFamily();
+  const { user } = useAuth();
   const { mutateAsync: createReservation } = useCreateReservation();
 
   const initialStart = params.startTime
@@ -78,6 +80,8 @@ export default function NewReservationScreen() {
         endTime: utcEnd.toISOString(),
         notes: notes.trim() || undefined,
         reminderAt,
+        userId: user?.id,
+        user: user ?? undefined,
       });
       console.log('[NewReservation] Reservation created successfully');
       router.back();

@@ -7,6 +7,8 @@ export interface CreateReservationData {
   endTime: string;
   notes?: string;
   reminderAt?: string;
+  userId?: string;
+  user?: User;
 }
 
 interface ReservationsContextValue {
@@ -128,10 +130,11 @@ export function ReservationsProvider({ children }: { children: React.ReactNode }
   const [reservations, setReservations] = useState<Reservation[]>(makeSeedReservations);
 
   const createReservation = useCallback((data: CreateReservationData): Reservation => {
+    const reservationUser = data.user ?? MOCK_KARLIS;
     const newReservation: Reservation = {
       id: Math.random().toString(36).slice(2),
-      userId: MOCK_KARLIS.id,
-      user: MOCK_KARLIS,
+      userId: data.userId ?? reservationUser.id,
+      user: reservationUser,
       title: data.title,
       startTime: data.startTime,
       endTime: data.endTime,
