@@ -15,7 +15,7 @@ const MOCK_USER: User = {
   name: 'Alice Smith',
   email: 'alice@family.com',
   color: '#3B82F6',
-  role: 'ADMIN',
+  role: 'admin',
   createdAt: new Date().toISOString(),
 };
 

@@ -33,7 +33,7 @@ export default function SettingsScreen() {
     setVehicleName(settings.vehicleName);
   }, [settings]);
 
-  const isAdmin = currentUser?.role === 'ADMIN';
+  const isAdmin = currentUser?.role === 'admin';
 
   async function handleSave() {
     console.log('[Settings] Save settings pressed:', { timezone, vehicleName });

@@ -47,7 +47,7 @@ export default function ReservationDetailScreen() {
 
   const canEdit =
     reservation &&
-    (reservation.userId === currentUser?.id || currentUser?.role === 'ADMIN') &&
+    (reservation.userId === currentUser?.id || currentUser?.role === 'admin') &&
     reservation.status === 'ACTIVE';
 
   function startEditing() {

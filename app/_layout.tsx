@@ -18,6 +18,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { FamilyProvider } from '@/contexts/FamilyContext';
+import { ReservationsProvider } from '@/contexts/ReservationsContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -91,44 +92,46 @@ export default function RootLayout() {
     <DevErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <FamilyProvider>
-            <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}>
-              <SafeAreaProvider>
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                  <NavigationGuard />
-                  <Stack>
-                    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                    <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-                    <Stack.Screen
-                      name="reservation/new"
-                      options={{
-                        presentation: 'formSheet',
-                        sheetGrabberVisible: true,
-                        sheetAllowedDetents: [0.6, 1.0],
-                        headerShown: false,
-                      }}
-                    />
-                    <Stack.Screen
-                      name="reservation/[id]"
-                      options={{
-                        title: 'Reservation',
-                        headerBackButtonDisplayMode: 'minimal',
-                      }}
-                    />
-                    <Stack.Screen
-                      name="settings/index"
-                      options={{
-                        title: 'Family Settings',
-                        headerBackButtonDisplayMode: 'minimal',
-                      }}
-                    />
-                  </Stack>
-                  <StatusBar style="auto" animated />
-                  <SystemBars style="auto" />
-                </GestureHandlerRootView>
-              </SafeAreaProvider>
-            </ThemeProvider>
-          </FamilyProvider>
+          <ReservationsProvider>
+            <FamilyProvider>
+              <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}>
+                <SafeAreaProvider>
+                  <GestureHandlerRootView style={{ flex: 1 }}>
+                    <NavigationGuard />
+                    <Stack>
+                      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                      <Stack.Screen
+                        name="reservation/new"
+                        options={{
+                          presentation: 'formSheet',
+                          sheetGrabberVisible: true,
+                          sheetAllowedDetents: [0.6, 1.0],
+                          headerShown: false,
+                        }}
+                      />
+                      <Stack.Screen
+                        name="reservation/[id]"
+                        options={{
+                          title: 'Reservation',
+                          headerBackButtonDisplayMode: 'minimal',
+                        }}
+                      />
+                      <Stack.Screen
+                        name="settings/index"
+                        options={{
+                          title: 'Family Settings',
+                          headerBackButtonDisplayMode: 'minimal',
+                        }}
+                      />
+                    </Stack>
+                    <StatusBar style="auto" animated />
+                    <SystemBars style="auto" />
+                  </GestureHandlerRootView>
+                </SafeAreaProvider>
+              </ThemeProvider>
+            </FamilyProvider>
+          </ReservationsProvider>
         </AuthProvider>
       </QueryClientProvider>
     </DevErrorBoundary>

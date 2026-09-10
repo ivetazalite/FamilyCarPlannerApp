@@ -71,7 +71,7 @@ export default function ProfileScreen() {
 
   if (!user) return null;
 
-  const isAdmin = user.role === 'ADMIN';
+  const isAdmin = user.role === 'admin';
   const displayName = isEditing ? editName : user.name;
   const displayColor = isEditing ? editColor : user.color;
 

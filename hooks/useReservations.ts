@@ -1,97 +1,77 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import api from '@/utils/api';
-import { queryKeys } from '@/utils/queryKeys';
 import type { Reservation } from '@/types';
+import { useReservationsContext, type CreateReservationData } from '@/contexts/ReservationsContext';
+import { addDays, parseISO } from 'date-fns';
+
+export type { CreateReservationData };
 
 export function useReservations() {
-  return useQuery({
-    queryKey: queryKeys.reservations.list(),
-    queryFn: async () => {
-      console.log('[useReservations] Fetching all reservations');
-      const { data } = await api.get<{ reservations: Reservation[] }>('/api/reservations');
-      return data.reservations;
+  const { reservations } = useReservationsContext();
+  console.log('[useReservations] Returning', reservations.length, 'local reservations');
+  return {
+    data: reservations,
+    isLoading: false as const,
+    isError: false as const,
+    isFetching: false as const,
+    refetch: () => {
+      console.log('[useReservations] refetch called (no-op in local mode)');
     },
-    staleTime: 30_000,
-  });
+  };
 }
 
 export function useWeekReservations(weekStart: string) {
-  return useQuery({
-    queryKey: queryKeys.reservations.week(weekStart),
-    queryFn: async () => {
-      console.log('[useWeekReservations] Fetching reservations for week:', weekStart);
-      const { data } = await api.get<{ reservations: Reservation[] }>('/api/reservations', {
-        params: { weekStart },
-      });
-      return data.reservations;
-    },
-    staleTime: 30_000,
-    enabled: !!weekStart,
-  });
+  const { reservations } = useReservationsContext();
+  const start = weekStart ? parseISO(weekStart) : null;
+  const end = start ? addDays(start, 7) : null;
+  const filtered = start && end
+    ? reservations.filter(r => {
+        const t = parseISO(r.startTime);
+        return t >= start && t < end;
+      })
+    : reservations;
+  console.log('[useWeekReservations] week:', weekStart, '→', filtered.length, 'reservations');
+  return { data: filtered, isLoading: false as const, isError: false as const };
 }
 
 export function useReservation(id: string) {
-  return useQuery({
-    queryKey: queryKeys.reservations.detail(id),
-    queryFn: async () => {
-      console.log('[useReservation] Fetching reservation:', id);
-      const { data } = await api.get<Reservation>(`/api/reservations/${id}`);
-      return data;
-    },
-    enabled: !!id,
-  });
-}
-
-export interface CreateReservationData {
-  title: string;
-  startTime: string;
-  endTime: string;
-  notes?: string;
-  reminderAt?: string;
+  const { getReservation } = useReservationsContext();
+  const reservation = getReservation(id);
+  console.log('[useReservation] id:', id, '→', reservation ? reservation.title : 'not found');
+  return {
+    data: reservation as Reservation | undefined,
+    isLoading: false as const,
+    isError: !reservation,
+  };
 }
 
 export function useCreateReservation() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (data: CreateReservationData) => {
-      console.log('[useCreateReservation] Creating reservation:', data.title);
-      const res = await api.post<Reservation>('/api/reservations', data);
-      return res.data;
+  const { createReservation } = useReservationsContext();
+  return {
+    mutateAsync: (data: CreateReservationData): Promise<Reservation> => {
+      console.log('[useCreateReservation] mutateAsync:', data.title);
+      const result = createReservation(data);
+      return Promise.resolve(result);
     },
-    onSuccess: (data) => {
-      console.log('[useCreateReservation] Created reservation:', data.id);
-      queryClient.invalidateQueries({ queryKey: queryKeys.reservations.all });
-    },
-  });
+  };
 }
 
 export function useUpdateReservation(id: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (data: Partial<CreateReservationData>) => {
-      console.log('[useUpdateReservation] Updating reservation:', id);
-      const res = await api.patch<Reservation>(`/api/reservations/${id}`, data);
-      return res.data;
+  const { updateReservation } = useReservationsContext();
+  return {
+    mutateAsync: (data: Partial<CreateReservationData>): Promise<void> => {
+      console.log('[useUpdateReservation] mutateAsync id:', id);
+      updateReservation(id, data);
+      return Promise.resolve();
     },
-    onSuccess: () => {
-      console.log('[useUpdateReservation] Updated reservation:', id);
-      queryClient.invalidateQueries({ queryKey: queryKeys.reservations.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.reservations.detail(id) });
-    },
-  });
+  };
 }
 
 export function useCancelReservation() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      console.log('[useCancelReservation] Cancelling reservation:', id);
-      await api.delete(`/api/reservations/${id}`);
-      return id;
+  const { cancelReservation } = useReservationsContext();
+  return {
+    mutateAsync: (id: string): Promise<void> => {
+      console.log('[useCancelReservation] mutateAsync id:', id);
+      cancelReservation(id);
+      return Promise.resolve();
     },
-    onSuccess: (id) => {
-      console.log('[useCancelReservation] Cancelled reservation:', id);
-      queryClient.invalidateQueries({ queryKey: queryKeys.reservations.all });
-    },
-  });
+  };
 }
