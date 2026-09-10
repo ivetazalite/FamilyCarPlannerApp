@@ -5,9 +5,7 @@ import { subWeeks } from 'date-fns/subWeeks';
 import { eachDayOfInterval } from 'date-fns/eachDayOfInterval';
 import { format } from 'date-fns/format';
 import { addMinutes } from 'date-fns/addMinutes';
-import { isSameDay } from 'date-fns/isSameDay';
 import { areIntervalsOverlapping } from 'date-fns/areIntervalsOverlapping';
-import { toZonedTime } from 'date-fns-tz';
 import type { Reservation } from '@/types';
 
 export const SLOT_START_HOUR = 6;
@@ -62,26 +60,26 @@ export function formatWeekRange(weekStart: Date): string {
 export function getReservationsForDay(
   reservations: Reservation[],
   day: Date,
-  timezone: string
+  _timezone: string
 ): Reservation[] {
+  const dayStr = format(day, 'yyyy-MM-dd');
   return reservations.filter((r) => {
     if (r.status === 'CANCELLED') return false;
     try {
-      const zonedStart = toZonedTime(new Date(r.startTime), timezone);
-      return isSameDay(zonedStart, day);
+      // Compare local date string — avoids timezone-shift mismatches
+      return format(new Date(r.startTime), 'yyyy-MM-dd') === dayStr;
     } catch {
       return false;
     }
   });
 }
 
-export function getSlotTopOffset(startTime: string, timezone: string): number {
+export function getSlotTopOffset(startTime: string, _timezone: string): number {
   try {
-    const date = toZonedTime(new Date(startTime), timezone);
+    const date = new Date(startTime);
     const hours = date.getHours();
     const minutes = date.getMinutes();
-    const totalMinutesFromStart =
-      (hours - SLOT_START_HOUR) * 60 + minutes;
+    const totalMinutesFromStart = (hours - SLOT_START_HOUR) * 60 + minutes;
     return (totalMinutesFromStart / SLOT_DURATION_MINUTES) * SLOT_HEIGHT;
   } catch {
     return 0;
