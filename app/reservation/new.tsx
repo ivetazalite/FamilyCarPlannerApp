@@ -48,12 +48,10 @@ export default function NewReservationScreen() {
 
   // Date/time picker state
   const [showStartDate, setShowStartDate] = useState(false);
-  const [showStartTime, setShowStartTime] = useState(false);
-  const [showEndTime, setShowEndTime] = useState(false);
+  const [showEndDate, setShowEndDate] = useState(false);
 
   const startDateDisplay = format(startDate, 'EEE, d MMM yyyy');
-  const startTimeDisplay = format(startDate, 'HH:mm');
-  const endTimeDisplay = format(endDate, 'HH:mm');
+  const endDateDisplay = format(endDate, 'EEE, d MMM yyyy');
 
   const handleSave = useCallback(async () => {
     console.log('[NewReservation] Save reservation pressed:', title);
@@ -95,6 +93,15 @@ export default function NewReservationScreen() {
       setIsLoading(false);
     }
   }, [title, startDate, endDate, notes, reminderEnabled, reminderMinutes, settings.timezone, createReservation, router]);
+
+  const labelStyle = {
+    fontSize: 13,
+    fontWeight: '600' as const,
+    color: COLORS.textSecondary,
+    fontFamily: 'SpaceGrotesk-SemiBold',
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.5,
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.background }}>
@@ -181,18 +188,7 @@ export default function NewReservationScreen() {
 
         {/* Title */}
         <View style={{ gap: 6 }}>
-          <Text
-            style={{
-              fontSize: 13,
-              fontWeight: '600',
-              color: COLORS.textSecondary,
-              fontFamily: 'SpaceGrotesk-SemiBold',
-              textTransform: 'uppercase',
-              letterSpacing: 0.5,
-            }}
-          >
-            Title *
-          </Text>
+          <Text style={labelStyle}>Title *</Text>
           <TextInput
             value={title}
             onChangeText={setTitle}
@@ -216,23 +212,12 @@ export default function NewReservationScreen() {
           />
         </View>
 
-        {/* Date */}
+        {/* Start date */}
         <View style={{ gap: 6 }}>
-          <Text
-            style={{
-              fontSize: 13,
-              fontWeight: '600',
-              color: COLORS.textSecondary,
-              fontFamily: 'SpaceGrotesk-SemiBold',
-              textTransform: 'uppercase',
-              letterSpacing: 0.5,
-            }}
-          >
-            Date
-          </Text>
+          <Text style={labelStyle}>Date</Text>
           <AnimatedPressable
             onPress={() => {
-              console.log('[NewReservation] Date picker opened');
+              console.log('[NewReservation] Start date picker opened');
               setShowStartDate(true);
             }}
             style={{
@@ -266,153 +251,101 @@ export default function NewReservationScreen() {
                 if (date) {
                   const newStart = new Date(startDate);
                   newStart.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
-                  const newEnd = new Date(endDate);
-                  newEnd.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
                   setStartDate(newStart);
-                  setEndDate(newEnd);
-                  console.log('[NewReservation] Date changed:', date.toISOString());
+                  console.log('[NewReservation] Start date changed:', date.toISOString());
                 }
               }}
             />
           )}
         </View>
 
-        {/* Time row */}
-        <View style={{ flexDirection: 'row', gap: 12 }}>
-          {/* Start time */}
-          <View style={{ flex: 1, gap: 6 }}>
-            <Text
-              style={{
-                fontSize: 13,
-                fontWeight: '600',
-                color: COLORS.textSecondary,
-                fontFamily: 'SpaceGrotesk-SemiBold',
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-              }}
-            >
-              Start time
-            </Text>
-            <AnimatedPressable
-              onPress={() => {
-                console.log('[NewReservation] Start time picker opened');
-                setShowStartTime(true);
-              }}
-              style={{
-                backgroundColor: COLORS.surfaceSecondary,
-                borderRadius: 10,
-                paddingHorizontal: 14,
-                paddingVertical: 14,
-                borderWidth: 1,
-                borderColor: COLORS.border,
-              }}
-              accessibilityLabel="Select start time"
-              accessibilityRole="button"
-            >
-              <Text
-                style={{
-                  fontSize: 15,
-                  color: COLORS.text,
-                  fontFamily: 'SpaceGrotesk-Regular',
-                  fontVariant: ['tabular-nums'],
-                }}
-              >
-                {startTimeDisplay}
-              </Text>
-            </AnimatedPressable>
-            {showStartTime && (
-              <DateTimePicker
-                value={startDate}
-                mode="time"
-                is24Hour
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                onChange={(_, date) => {
-                  setShowStartTime(Platform.OS === 'ios');
-                  if (date) {
-                    setStartDate(date);
-                    if (date >= endDate) {
-                      setEndDate(addHours(date, 1));
-                    }
-                    console.log('[NewReservation] Start time changed:', date.toISOString());
-                  }
-                }}
-              />
-            )}
-          </View>
+        {/* Start time — always-visible inline spinner */}
+        <View style={{ gap: 6 }}>
+          <Text style={labelStyle}>Start time</Text>
+          <DateTimePicker
+            value={startDate}
+            mode="time"
+            is24Hour
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={(_, date) => {
+              if (date) {
+                setStartDate(date);
+                if (date >= endDate) {
+                  setEndDate(addHours(date, 1));
+                }
+                console.log('[NewReservation] Start time changed:', date.toISOString());
+              }
+            }}
+          />
+        </View>
 
-          {/* End time */}
-          <View style={{ flex: 1, gap: 6 }}>
+        {/* End date */}
+        <View style={{ gap: 6 }}>
+          <Text style={labelStyle}>End date</Text>
+          <AnimatedPressable
+            onPress={() => {
+              console.log('[NewReservation] End date picker opened');
+              setShowEndDate(true);
+            }}
+            style={{
+              backgroundColor: COLORS.surfaceSecondary,
+              borderRadius: 10,
+              paddingHorizontal: 14,
+              paddingVertical: 14,
+              borderWidth: 1,
+              borderColor: COLORS.border,
+            }}
+            accessibilityLabel="Select end date"
+            accessibilityRole="button"
+          >
             <Text
               style={{
-                fontSize: 13,
-                fontWeight: '600',
-                color: COLORS.textSecondary,
-                fontFamily: 'SpaceGrotesk-SemiBold',
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
+                fontSize: 15,
+                color: COLORS.text,
+                fontFamily: 'SpaceGrotesk-Regular',
               }}
             >
-              End time
+              {endDateDisplay}
             </Text>
-            <AnimatedPressable
-              onPress={() => {
-                console.log('[NewReservation] End time picker opened');
-                setShowEndTime(true);
+          </AnimatedPressable>
+          {showEndDate && (
+            <DateTimePicker
+              value={endDate}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'inline' : 'default'}
+              onChange={(_, date) => {
+                setShowEndDate(Platform.OS === 'ios');
+                if (date) {
+                  const newEnd = new Date(endDate);
+                  newEnd.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+                  setEndDate(newEnd);
+                  console.log('[NewReservation] End date changed:', date.toISOString());
+                }
               }}
-              style={{
-                backgroundColor: COLORS.surfaceSecondary,
-                borderRadius: 10,
-                paddingHorizontal: 14,
-                paddingVertical: 14,
-                borderWidth: 1,
-                borderColor: COLORS.border,
-              }}
-              accessibilityLabel="Select end time"
-              accessibilityRole="button"
-            >
-              <Text
-                style={{
-                  fontSize: 15,
-                  color: COLORS.text,
-                  fontFamily: 'SpaceGrotesk-Regular',
-                  fontVariant: ['tabular-nums'],
-                }}
-              >
-                {endTimeDisplay}
-              </Text>
-            </AnimatedPressable>
-            {showEndTime && (
-              <DateTimePicker
-                value={endDate}
-                mode="time"
-                is24Hour
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                onChange={(_, date) => {
-                  setShowEndTime(Platform.OS === 'ios');
-                  if (date) {
-                    setEndDate(date);
-                    console.log('[NewReservation] End time changed:', date.toISOString());
-                  }
-                }}
-              />
-            )}
-          </View>
+            />
+          )}
+        </View>
+
+        {/* End time — always-visible inline spinner */}
+        <View style={{ gap: 6 }}>
+          <Text style={labelStyle}>End time</Text>
+          <DateTimePicker
+            value={endDate}
+            mode="time"
+            is24Hour
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={(_, date) => {
+              if (date) {
+                setEndDate(date);
+                console.log('[NewReservation] End time changed:', date.toISOString());
+              }
+            }}
+          />
         </View>
 
         {/* Notes */}
         <View style={{ gap: 6 }}>
-          <Text
-            style={{
-              fontSize: 13,
-              fontWeight: '600',
-              color: COLORS.textSecondary,
-              fontFamily: 'SpaceGrotesk-SemiBold',
-              textTransform: 'uppercase',
-              letterSpacing: 0.5,
-            }}
-          >
-            Notes (optional)
-          </Text>
+          <Text style={labelStyle}>Notes (optional)</Text>
           <TextInput
             value={notes}
             onChangeText={setNotes}
