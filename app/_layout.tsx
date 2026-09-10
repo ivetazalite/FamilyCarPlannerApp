@@ -1,7 +1,7 @@
 import 'react-native-reanimated';
 import React, { useEffect } from 'react';
 import { useFonts } from 'expo-font';
-import { Stack, Redirect } from 'expo-router';
+import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { SystemBars } from 'react-native-edge-to-edge';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -39,14 +39,9 @@ export const unstable_settings = {
 };
 
 function NavigationGuard() {
-  const { user, isLoading } = useAuth();
-
+  const { isLoading } = useAuth();
+  console.log('[NavigationGuard] isLoading:', isLoading);
   if (isLoading) return null;
-
-  if (!user) {
-    return <Redirect href="/(auth)/login" />;
-  }
-
   return null;
 }
 

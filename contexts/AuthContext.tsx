@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { storage } from '@/utils/storage';
-import api from '@/utils/api';
 import type { User, RegisterData } from '@/types';
 
 interface AuthContextValue {
@@ -12,6 +10,15 @@ interface AuthContextValue {
   updateProfile: (data: Partial<User>) => Promise<void>;
 }
 
+const MOCK_USER: User = {
+  id: 'mock-1',
+  name: 'Alice Smith',
+  email: 'alice@family.com',
+  color: '#3B82F6',
+  role: 'ADMIN',
+  createdAt: new Date().toISOString(),
+};
+
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -19,58 +26,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    restoreSession();
+    console.log('[Auth] Using mock user — backend not available');
+    setUser(MOCK_USER);
+    setIsLoading(false);
   }, []);
 
-  async function restoreSession() {
-    try {
-      const token = await storage.getItem('accessToken');
-      if (!token) {
-        setIsLoading(false);
-        return;
-      }
-      console.log('[Auth] Restoring session from stored token');
-      const { data } = await api.get<User>('/api/users/me');
-      setUser(data);
-      console.log('[Auth] Session restored for user:', data.email);
-    } catch (e) {
-      console.warn('[Auth] Session restore failed:', e);
-      await storage.clearTokens();
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   const login = useCallback(async (email: string, password: string) => {
-    console.log('[Auth] Login attempt for:', email);
-    const { data } = await api.post('/api/auth/login', { email, password });
-    await storage.setItem('accessToken', data.accessToken);
-    await storage.setItem('refreshToken', data.refreshToken);
-    setUser(data.user);
-    console.log('[Auth] Login successful for:', data.user.email);
+    console.log('[Auth] Login button pressed for:', email);
+    setUser({ ...MOCK_USER, email });
   }, []);
 
   const register = useCallback(async (registerData: RegisterData) => {
-    console.log('[Auth] Register attempt for:', registerData.email);
-    const { data } = await api.post('/api/auth/register', registerData);
-    await storage.setItem('accessToken', data.accessToken);
-    await storage.setItem('refreshToken', data.refreshToken);
-    setUser(data.user);
-    console.log('[Auth] Registration successful for:', data.user.email);
+    console.log('[Auth] Register button pressed for:', registerData.email);
+    setUser({ ...MOCK_USER, email: registerData.email, name: registerData.name, color: registerData.color });
   }, []);
 
   const logout = useCallback(async () => {
-    console.log('[Auth] Logging out user:', user?.email);
-    await storage.clearTokens();
+    console.log('[Auth] Logout button pressed, clearing mock user');
     setUser(null);
-    console.log('[Auth] Logout complete');
-  }, [user]);
+  }, []);
 
   const updateProfile = useCallback(async (profileData: Partial<User>) => {
-    console.log('[Auth] Updating profile:', profileData);
-    const { data } = await api.patch<User>('/api/users/me', profileData);
-    setUser(data);
-    console.log('[Auth] Profile updated');
+    console.log('[Auth] Update profile called with:', profileData);
+    setUser(prev => (prev ? { ...prev, ...profileData } : prev));
   }, []);
 
   return (
