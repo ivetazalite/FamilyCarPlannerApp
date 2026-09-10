@@ -13,8 +13,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { ReminderPicker } from '@/components/ReminderPicker';
-import { useCreateReservation } from '@/hooks/useReservations';
+import { useCreateReservation, useReservations } from '@/hooks/useReservations';
 import { useFamily } from '@/contexts/FamilyContext';
+import { detectConflicts } from '@/utils/dateHelpers';
 import { useAuth } from '@/contexts/AuthContext';
 import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 import { addHours } from 'date-fns/addHours';
@@ -29,6 +30,7 @@ export default function NewReservationScreen() {
   const { settings } = useFamily();
   const { user } = useAuth();
   const { mutateAsync: createReservation } = useCreateReservation();
+  const { data: allReservations = [] } = useReservations();
 
   const initialStart = params.startTime
     ? toZonedTime(new Date(params.startTime), settings.timezone)
@@ -76,6 +78,15 @@ export default function NewReservationScreen() {
       setError('End time must be after start time.');
       return;
     }
+    const conflicts = detectConflicts(allReservations, startDate, endDate);
+    if (conflicts.length > 0) {
+      console.log('[NewReservation] Conflict detected:', conflicts.length, 'booking(s)');
+      const names = conflicts
+        .map((c) => `• ${c.user?.name ?? 'Someone'}: ${format(new Date(c.startTime), 'HH:mm')}–${format(new Date(c.endTime), 'HH:mm')} (${c.title})`)
+        .join('\n');
+      setError(`This time slot conflicts with ${conflicts.length} existing booking${conflicts.length > 1 ? 's' : ''}:\n${names}`);
+      return;
+    }
     setError('');
     setIsLoading(true);
     try {
@@ -105,7 +116,7 @@ export default function NewReservationScreen() {
     } finally {
       setIsLoading(false);
     }
-  }, [title, startDate, endDate, notes, reminderEnabled, reminderMinutes, settings.timezone, createReservation, router]);
+  }, [title, startDate, endDate, notes, reminderEnabled, reminderMinutes, settings.timezone, createReservation, router, allReservations]);
 
   const labelStyle = {
     fontSize: 13,

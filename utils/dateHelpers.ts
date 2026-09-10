@@ -146,3 +146,19 @@ export function isCurrentWeek(weekStart: Date): boolean {
   const currentWeekStart = getWeekStart(now);
   return weekStart.toDateString() === currentWeekStart.toDateString();
 }
+
+export function detectConflicts(
+  reservations: Reservation[],
+  newStart: Date,
+  newEnd: Date,
+  excludeId?: string
+): Reservation[] {
+  return reservations.filter((r) => {
+    if (r.status === 'CANCELLED') return false;
+    if (excludeId && r.id === excludeId) return false;
+    const rStart = new Date(r.startTime);
+    const rEnd = new Date(r.endTime);
+    // Overlaps if newStart < rEnd AND newEnd > rStart
+    return newStart < rEnd && newEnd > rStart;
+  });
+}

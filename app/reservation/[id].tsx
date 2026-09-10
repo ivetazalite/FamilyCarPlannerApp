@@ -15,7 +15,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { MemberAvatar } from '@/components/MemberAvatar';
-import { useReservation, useUpdateReservation, useCancelReservation } from '@/hooks/useReservations';
+import { useReservation, useUpdateReservation, useCancelReservation, useReservations } from '@/hooks/useReservations';
+import { detectConflicts } from '@/utils/dateHelpers';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useFamily } from '@/contexts/FamilyContext';
 import { toDisplayDate, toDisplayTimeOnly } from '@/utils/timezone';
@@ -34,6 +35,7 @@ export default function ReservationDetailScreen() {
   const { data: reservation, isLoading, isError } = useReservation(id);
   const { mutateAsync: updateReservation } = useUpdateReservation(id);
   const { mutateAsync: cancelReservation } = useCancelReservation();
+  const { data: allReservations = [] } = useReservations();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState('');
@@ -76,6 +78,15 @@ export default function ReservationDetailScreen() {
       setError('End time must be after start time.');
       return;
     }
+    const conflicts = detectConflicts(allReservations, editStartDate, editEndDate, id);
+    if (conflicts.length > 0) {
+      console.log('[ReservationDetail] Conflict detected:', conflicts.length, 'booking(s)');
+      const names = conflicts
+        .map((c) => `• ${c.user?.name ?? 'Someone'}: ${format(new Date(c.startTime), 'HH:mm')}–${format(new Date(c.endTime), 'HH:mm')} (${c.title})`)
+        .join('\n');
+      setError(`This time slot conflicts with ${conflicts.length} existing booking${conflicts.length > 1 ? 's' : ''}:\n${names}`);
+      return;
+    }
     setError('');
     setIsSaving(true);
     try {
@@ -98,7 +109,7 @@ export default function ReservationDetailScreen() {
     } finally {
       setIsSaving(false);
     }
-  }, [editTitle, editNotes, editStartDate, editEndDate, settings.timezone, updateReservation]);
+  }, [editTitle, editNotes, editStartDate, editEndDate, settings.timezone, updateReservation, allReservations, id]);
 
   const handleCancel = useCallback(() => {
     console.log('[ReservationDetail] Cancel reservation pressed');
