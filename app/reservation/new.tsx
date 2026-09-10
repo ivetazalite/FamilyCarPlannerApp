@@ -51,6 +51,16 @@ export default function NewReservationScreen() {
   const [showStartTime, setShowStartTime] = useState(false);
   const [showEndTime, setShowEndTime] = useState(false);
 
+  // Temp state for iOS spinner — holds in-progress value before "Done"
+  const [tempStartTime, setTempStartTime] = useState(initialStart);
+  const [tempEndTime, setTempEndTime] = useState(addHours(initialStart, 1));
+
+  function mergeTime(base: Date, timeSource: Date): Date {
+    const merged = new Date(base);
+    merged.setHours(timeSource.getHours(), timeSource.getMinutes(), 0, 0);
+    return merged;
+  }
+
   const startDateDisplay = format(startDate, 'EEE, d MMM yyyy');
   const endDateDisplay = format(endDate, 'EEE, d MMM yyyy');
   const startTimeDisplay = format(startDate, 'HH:mm');
@@ -268,6 +278,7 @@ export default function NewReservationScreen() {
           <AnimatedPressable
             onPress={() => {
               console.log('[NewReservation] Start time picker opened');
+              setTempStartTime(startDate);
               setShowStartTime(true);
             }}
             style={{
@@ -296,22 +307,57 @@ export default function NewReservationScreen() {
             <Pencil size={14} color={COLORS.textSecondary} />
           </AnimatedPressable>
           {showStartTime && (
-            <DateTimePicker
-              value={startDate}
-              mode="time"
-              is24Hour
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={(_, date) => {
-                if (Platform.OS !== 'ios') setShowStartTime(false);
-                if (date) {
-                  setStartDate(date);
-                  if (date >= endDate) {
-                    setEndDate(addHours(date, 1));
+            <View>
+              {Platform.OS === 'ios' && (
+                <View style={{ alignItems: 'flex-end', paddingBottom: 4 }}>
+                  <AnimatedPressable
+                    onPress={() => {
+                      const merged = mergeTime(startDate, tempStartTime);
+                      setStartDate(merged);
+                      if (merged >= endDate) {
+                        setEndDate(addHours(merged, 1));
+                      }
+                      console.log('[NewReservation] Start time confirmed (iOS):', merged.toISOString());
+                      setShowStartTime(false);
+                    }}
+                    accessibilityLabel="Done"
+                    accessibilityRole="button"
+                  >
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        color: COLORS.primary,
+                        fontFamily: 'SpaceGrotesk-SemiBold',
+                        paddingVertical: 4,
+                        paddingHorizontal: 4,
+                      }}
+                    >
+                      Done
+                    </Text>
+                  </AnimatedPressable>
+                </View>
+              )}
+              <DateTimePicker
+                value={tempStartTime}
+                mode="time"
+                is24Hour
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={(_, date) => {
+                  if (!date) return;
+                  if (Platform.OS === 'ios') {
+                    setTempStartTime(date);
+                  } else {
+                    const merged = mergeTime(startDate, date);
+                    setStartDate(merged);
+                    if (merged >= endDate) {
+                      setEndDate(addHours(merged, 1));
+                    }
+                    console.log('[NewReservation] Start time changed (Android):', merged.toISOString());
+                    setShowStartTime(false);
                   }
-                  console.log('[NewReservation] Start time changed:', date.toISOString());
-                }
-              }}
-            />
+                }}
+              />
+            </View>
           )}
         </View>
 
@@ -368,6 +414,7 @@ export default function NewReservationScreen() {
           <AnimatedPressable
             onPress={() => {
               console.log('[NewReservation] End time picker opened');
+              setTempEndTime(endDate);
               setShowEndTime(true);
             }}
             style={{
@@ -396,19 +443,51 @@ export default function NewReservationScreen() {
             <Pencil size={14} color={COLORS.textSecondary} />
           </AnimatedPressable>
           {showEndTime && (
-            <DateTimePicker
-              value={endDate}
-              mode="time"
-              is24Hour
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-              onChange={(_, date) => {
-                if (Platform.OS !== 'ios') setShowEndTime(false);
-                if (date) {
-                  setEndDate(date);
-                  console.log('[NewReservation] End time changed:', date.toISOString());
-                }
-              }}
-            />
+            <View>
+              {Platform.OS === 'ios' && (
+                <View style={{ alignItems: 'flex-end', paddingBottom: 4 }}>
+                  <AnimatedPressable
+                    onPress={() => {
+                      const merged = mergeTime(endDate, tempEndTime);
+                      setEndDate(merged);
+                      console.log('[NewReservation] End time confirmed (iOS):', merged.toISOString());
+                      setShowEndTime(false);
+                    }}
+                    accessibilityLabel="Done"
+                    accessibilityRole="button"
+                  >
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        color: COLORS.primary,
+                        fontFamily: 'SpaceGrotesk-SemiBold',
+                        paddingVertical: 4,
+                        paddingHorizontal: 4,
+                      }}
+                    >
+                      Done
+                    </Text>
+                  </AnimatedPressable>
+                </View>
+              )}
+              <DateTimePicker
+                value={tempEndTime}
+                mode="time"
+                is24Hour
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={(_, date) => {
+                  if (!date) return;
+                  if (Platform.OS === 'ios') {
+                    setTempEndTime(date);
+                  } else {
+                    const merged = mergeTime(endDate, date);
+                    setEndDate(merged);
+                    console.log('[NewReservation] End time changed (Android):', merged.toISOString());
+                    setShowEndTime(false);
+                  }
+                }}
+              />
+            </View>
           )}
         </View>
 
