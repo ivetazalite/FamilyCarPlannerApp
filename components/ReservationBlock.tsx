@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import { AnimatedPressable } from './AnimatedPressable';
 import { useColors } from '@/hooks/useColors';
+import { format } from 'date-fns/format';
 import type { Reservation } from '@/types';
 
 interface ReservationBlockProps {
@@ -30,6 +31,10 @@ export function ReservationBlock({
 
   const titleDisplay = reservation.title || 'Reservation';
   const shortTitle = titleDisplay.length > 12 ? titleDisplay.slice(0, 12) + '…' : titleDisplay;
+  const timeLabel =
+    format(new Date(reservation.startTime), 'HH:mm') +
+    '–' +
+    format(new Date(reservation.endTime), 'HH:mm');
 
   return (
     <AnimatedPressable
@@ -65,6 +70,19 @@ export function ReservationBlock({
       >
         {shortTitle}
       </Text>
+      {height > 24 && (
+        <Text
+          style={{
+            fontSize: 9,
+            color: 'rgba(255,255,255,0.9)',
+            fontFamily: 'SpaceGrotesk-Regular',
+            marginTop: 1,
+          }}
+          numberOfLines={1}
+        >
+          {timeLabel}
+        </Text>
+      )}
       {height > 36 && (
         <Text
           style={{

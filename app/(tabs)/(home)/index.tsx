@@ -1,13 +1,12 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, ChevronRight, Plus, Calendar } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useColors } from '@/hooks/useColors';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { WeeklyCalendar } from '@/components/WeeklyCalendar';
 import { MemberLegend } from '@/components/MemberLegend';
-import { EmptyState } from '@/components/EmptyState';
 import { useWeekReservations } from '@/hooks/useReservations';
 import { useFamilyMembers } from '@/hooks/useFamilyMembers';
 import { useFamily } from '@/contexts/FamilyContext';
@@ -183,24 +182,14 @@ export default function HomeScreen() {
       </View>
 
       {/* Calendar */}
-      {!isLoading && activeReservations.length === 0 ? (
-        <EmptyState
-          icon={Calendar}
-          title="No reservations this week"
-          subtitle="Tap any time slot or the + button to book the car"
-          ctaLabel="Book the car"
-          onCta={handleFABPress}
-        />
-      ) : (
-        <WeeklyCalendar
-          weekStart={weekStart}
-          reservations={activeReservations}
-          timezone={settings.timezone}
-          onSlotPress={handleSlotPress}
-          onReservationPress={handleReservationPress}
-          isLoading={isLoading}
-        />
-      )}
+      <WeeklyCalendar
+        weekStart={weekStart}
+        reservations={activeReservations}
+        timezone={settings.timezone}
+        onSlotPress={handleSlotPress}
+        onReservationPress={handleReservationPress}
+        isLoading={isLoading}
+      />
 
       {/* FAB */}
       <AnimatedPressable
